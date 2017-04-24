@@ -38,6 +38,7 @@ class WheelInstaller(object):
     wheel = None
 
     def __init__(self, location):
+        location = self._fix_location_case(location)
         # use pip's notion of supported tags, not wheel's:
         context = pip.pep425tags.get_supported
         try:
@@ -84,6 +85,28 @@ class WheelInstaller(object):
             if not os.path.exists(__init__filename):
                 shutil.copyfile(NAMESPACE_STUB_PATH, __init__filename)
 
+    @staticmethod
+    def _fix_location_case(location):
+        # Fix up the case of the filename that is used by
+        # wheel.install.WheelFile to determine the name of the dist-info
+        # directory in the zipfile, which is case sensitive.
+        dir_path = os.path.normpath(os.path.dirname(location))
+        basename = os.path.basename(location)
+
+        # On case sensitive systems, there may be more than one potential match
+        candidates = [
+            f for f in os.listdir(dir_path)
+            if os.path.isfile(os.path.join(dir_path, f))
+            and f.lower() == basename.lower()
+        ]
+        exact_match = [f for f in candidates if f == basename]
+        if exact_match:
+            return os.path.join(dir_path, exact_match[0])
+        # No exact match means we must have had our path modified, use first
+        # candidate (should be only one as this must be a case sensitive file
+        # system)
+        return os.path.join(dir_path, candidates[0])
+
     def distribution_info(self):
         """
         Parsed info from the wheel name, with a setuptools compatible platform
@@ -107,6 +130,7 @@ class WheelInstaller(object):
     def distribution(self, location, metadata=None):
         """ Get DistInfoDistribution for wheel """
         info = self.distribution_info()
+        location = self._fix_location_case(location)
         return pkg_resources.DistInfoDistribution(
             location=location,
             metadata=metadata,
