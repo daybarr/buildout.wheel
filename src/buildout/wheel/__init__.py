@@ -19,6 +19,7 @@ assert os.path.isfile(NAMESPACE_STUB_PATH)
 
 
 orig_distros_for_location = setuptools.package_index.distros_for_location
+orig_distros_for_filename = setuptools.package_index.distros_for_filename
 
 
 def unpack_wheel(spec, dest):
@@ -136,8 +137,21 @@ def distros_for_location(location, basename, metadata=None):
     return orig_distros_for_location(location, basename, metadata=metadata)
 
 
+def distros_for_filename(filename, metadata=None):
+    """Yield possible egg or source distribution objects based on a filename
+
+    Here we override setuptools to *not* call pkg_resources.normalize_path on
+    filename because we need to preserve case on case-sensitive systems
+    (Windows).
+    """
+    return distros_for_location(
+        os.path.realpath(filename), os.path.basename(filename), metadata
+    )
+
+
 def load(buildout):
     setuptools.package_index.distros_for_location = distros_for_location
+    setuptools.package_index.distros_for_filename = distros_for_filename
     buildout.old_unpack_wheel = zc.buildout.easy_install.UNPACKERS.get('.whl')
     zc.buildout.easy_install.UNPACKERS['.whl'] = unpack_wheel
     logger.debug('Patched in wheel support')
@@ -147,3 +161,4 @@ def unload(buildout):
     if buildout.old_unpack_wheel is not None:
         zc.buildout.easy_install.UNPACKERS['.whl'] = buildout.old_unpack_wheel
     setuptools.package_index.distros_for_location = orig_distros_for_location
+    setuptools.package_index.distros_for_filename = orig_distros_for_filename
