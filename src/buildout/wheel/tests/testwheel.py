@@ -1,3 +1,4 @@
+import gc
 import os
 import shutil
 import sys
@@ -20,9 +21,20 @@ class BuildoutWheelTests(unittest.TestCase):
 
     def setUp(self):
         self.here = os.path.dirname(__file__)
+        self.fake_buildout = None
         zc.buildout.testing.buildoutSetUp(self)
 
     def tearDown(self):
+        if self.fake_buildout:
+            pkg_resources.load_entry_point(
+                'buildout.wheel', 'zc.buildout.unloadextension', 'wheel'
+            )(self.fake_buildout)
+
+            # For Windows, have to force gc to close handle on '.whl' file
+            # prior to the rmtree done by buildoutTearDown
+            self.fake_buildout = None
+            gc.collect()
+
         zc.buildout.testing.buildoutTearDown(self)
         os.chdir(self.here)
 
@@ -46,12 +58,7 @@ class BuildoutWheelTests(unittest.TestCase):
         buildout = Buildout()
         pkg_resources.load_entry_point(
             'buildout.wheel', 'zc.buildout.extension', 'wheel')(buildout)
-
-        @self.register_teardown
-        def unload():
-            pkg_resources.load_entry_point(
-                'buildout.wheel', 'zc.buildout.unloadextension', 'wheel'
-            )(buildout)
+        self.fake_buildout = buildout
 
         ws = zc.buildout.easy_install.install(
             ['demo', 'extdemo'],
