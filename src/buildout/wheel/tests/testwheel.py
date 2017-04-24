@@ -33,14 +33,14 @@ class BuildoutWheelTests(unittest.TestCase):
         shutil.copytree(join(self.here, 'samples'), join(build, 'samples'))
         ws = zc.buildout.easy_install.install(
             ['setuptools', 'wheel'], None, check_picked=False, path=sys.path)
-        [py] = zc.buildout.easy_install.scripts(
+        py = zc.buildout.easy_install.scripts(
             [], ws, sys.executable, dest=build, interpreter='py')
         os.chdir(join(build, 'samples', 'demo'))
         zc.buildout.easy_install.call_subprocess(
-            [py, 'setup.py', 'bdist_wheel', '-d', eggs])
+            py + ['setup.py', 'bdist_wheel', '-d', eggs])
         os.chdir(join('..', 'extdemo'))
         zc.buildout.easy_install.call_subprocess(
-            [py, 'setup.py', 'bdist_wheel', '-d', eggs])
+            py + ['setup.py', 'bdist_wheel', '-d', eggs])
         os.chdir(join('..'))
 
         buildout = Buildout()
@@ -59,9 +59,9 @@ class BuildoutWheelTests(unittest.TestCase):
             index=eggs,
             check_picked=False,
             path=sys.path)
-        [py] = zc.buildout.easy_install.scripts(
+        py = zc.buildout.easy_install.scripts(
             [], ws, sys.executable, dest=join(self.sample_buildout, 'bin'),
             interpreter='py')
-        zc.buildout.easy_install.call_subprocess([py, 'getvals.py'])
+        zc.buildout.easy_install.call_subprocess(py + ['getvals.py'])
         with open('vals') as f:
             self.assertEqual('1 42', f.read())
