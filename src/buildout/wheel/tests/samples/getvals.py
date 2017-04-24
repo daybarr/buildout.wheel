@@ -1,3 +1,3 @@
-import demo, extdemo
+import Demo, extdemo
 with open('vals', 'w') as f:
-    f.write("%s %s" % (demo.value, extdemo.val))
+    f.write("%s %s" % (Demo.value, extdemo.val))

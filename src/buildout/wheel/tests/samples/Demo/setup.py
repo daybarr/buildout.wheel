@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='demo',
+setup(name='Demo',
       version = '1.0',
-      py_modules=['demo'],
+      py_modules=['Demo'],
       )

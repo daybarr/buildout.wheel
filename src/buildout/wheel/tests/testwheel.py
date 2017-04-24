@@ -47,7 +47,7 @@ class BuildoutWheelTests(unittest.TestCase):
             ['setuptools', 'wheel'], None, check_picked=False, path=sys.path)
         py = zc.buildout.easy_install.scripts(
             [], ws, sys.executable, dest=build, interpreter='py')
-        os.chdir(join(build, 'samples', 'demo'))
+        os.chdir(join(build, 'samples', 'Demo'))
         zc.buildout.easy_install.call_subprocess(
             py + ['setup.py', 'bdist_wheel', '-d', eggs])
         os.chdir(join('..', 'extdemo'))
@@ -61,7 +61,7 @@ class BuildoutWheelTests(unittest.TestCase):
         self.fake_buildout = buildout
 
         ws = zc.buildout.easy_install.install(
-            ['demo', 'extdemo'],
+            ['Demo', 'extdemo'],
             join(self.sample_buildout, 'eggs'),
             index=eggs,
             check_picked=False,
