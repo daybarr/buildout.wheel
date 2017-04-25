@@ -144,9 +144,13 @@ def distros_for_filename(filename, metadata=None):
     filename because we need to preserve case on case-sensitive systems
     (Windows).
     """
-    return distros_for_location(
-        os.path.realpath(filename), os.path.basename(filename), metadata
-    )
+    basename = os.path.basename(filename)
+    if basename.endswith('.whl'):
+        return distros_for_location(
+            os.path.realpath(filename), os.path.basename(filename), metadata
+        )
+    else:
+        return orig_distros_for_filename(filename, metadata)
 
 
 def load(buildout):
